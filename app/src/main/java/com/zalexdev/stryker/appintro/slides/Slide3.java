@@ -325,44 +325,62 @@ public class Slide3 extends Fragment {
             android.net.Uri uri = data.getData();
             if (uri != null) {
                 try {
-                    try {
-                        requireContext().getContentResolver().takePersistableUriPermission(uri,
-                                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    } catch (SecurityException ignored) {}
+                    requireContext().getContentResolver().takePersistableUriPermission(uri,
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (SecurityException ignored) {}
 
-                    java.io.InputStream in = requireContext().getContentResolver().openInputStream(uri);
-                    if (in != null) {
+                // Show copy-in-progress UI immediately
+                if (wikiButton != null) wikiButton.setVisibility(View.GONE);
+                if (selectFileButton != null) selectFileButton.setVisibility(View.GONE);
+                autoInstallButton.setEnabled(false);
+                autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
+                autoInstallButton.setText("Copying file...");
+                description.setText("Copying chroot archive to internal storage, please wait...");
+                lottieAnimationView.setMinAndMaxFrame(31, 91);
+                lottieAnimationView.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
+                lottieAnimationView.playAnimation();
+
+                // Copy file on background thread to avoid blocking the UI
+                new Thread(() -> {
+                    try {
+                        java.io.InputStream in = requireContext().getContentResolver().openInputStream(uri);
+                        if (in == null) {
+                            activity.runOnUiThread(() -> description.setText("Unable to open selected file"));
+                            return;
+                        }
                         FileUtils fileUtils = new FileUtils();
                         fileUtils.createFolder("cache");
                         java.io.File dest = new java.io.File(FileUtils.basePath + "/core.tar.gz");
                         java.io.FileOutputStream out = new java.io.FileOutputStream(dest);
-                        byte[] buffer = new byte[8192];
+                        byte[] buffer = new byte[65536]; // 64KB buffer for faster copy
                         int bytesRead;
+                        long total = 0;
                         while ((bytesRead = in.read(buffer)) != -1) {
                             out.write(buffer, 0, bytesRead);
+                            total += bytesRead;
+                            final long mb = total / (1024 * 1024);
+                            activity.runOnUiThread(() -> description.setText("Copying... " + mb + " MB written"));
                         }
                         in.close();
+                        out.flush();
                         out.close();
 
-                        // Visual feedback for installation
+                        // File fully written — now begin installation on UI thread
                         activity.runOnUiThread(() -> {
-                            if (wikiButton != null) wikiButton.setVisibility(View.GONE);
-                            if (selectFileButton != null) selectFileButton.setVisibility(View.GONE);
-                            autoInstallButton.setEnabled(false);
-                            autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
                             autoInstallButton.setText("Installing...");
-                            lottieAnimationView.setMinAndMaxFrame(31, 91);
-                            lottieAnimationView.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
-                            lottieAnimationView.playAnimation();
+                            description.setText("File copied. Starting extraction...");
+                            startInstallation();
                         });
 
-                        startInstallation();
-                    } else {
-                        description.setText("Unable to open selected file");
+                    } catch (Exception e) {
+                        activity.runOnUiThread(() -> {
+                            description.setText("Error copying file: " + e.getMessage());
+                            autoInstallButton.setEnabled(true);
+                            autoInstallButton.setText("Retry");
+                            if (selectFileButton != null) selectFileButton.setVisibility(View.VISIBLE);
+                        });
                     }
-                } catch (Exception e) {
-                    description.setText("Error opening file: " + e.getMessage());
-                }
+                }).start();
             }
         }
     }
