@@ -77,39 +77,35 @@ public class Slide3 extends Fragment {
 
         selectFileButton.setOnClickListener(view1 -> openFilePicker());
 
-        // Detect bundled chroot - try both listing and opening to be robust
+        // Check if chroot is available via bundled asset OR in local storage
+        File localChrootFile = findLocalChrootFile();
         boolean hasBundledChroot = false;
-        try {
-            // Method 1: list() to check presence
-            String[] assets = context.getAssets().list("");
-            if (assets != null) {
-                for (String name : assets) {
-                    if ("chroot_bundle.tar.gz".equals(name)) {
-                        hasBundledChroot = true;
-                        Log.d(TAG, "chroot_bundle.tar.gz found via list()");
-                        break;
+
+        if (localChrootFile == null) {
+            try {
+                String[] assets = context.getAssets().list("");
+                if (assets != null) {
+                    for (String name : assets) {
+                        if ("chroot_bundle.tar.gz".equals(name)) {
+                            hasBundledChroot = true;
+                            break;
+                        }
                     }
                 }
+            } catch (java.io.IOException e) {
+                Log.w(TAG, "Asset list failed: " + e.getMessage());
             }
-            // Method 2: if list() missed it, try open() directly
-            if (!hasBundledChroot) {
-                java.io.InputStream test = context.getAssets().open("chroot_bundle.tar.gz");
-                test.close();
-                hasBundledChroot = true;
-                Log.d(TAG, "chroot_bundle.tar.gz found via open()");
-            }
-        } catch (java.io.IOException e) {
-            Log.w(TAG, "chroot_bundle.tar.gz NOT found in assets: " + e.getMessage());
         }
 
-        Log.d(TAG, "hasBundledChroot = " + hasBundledChroot);
+        final File foundLocalFile = localChrootFile;
+        final boolean useBundledAsset = (localChrootFile == null && hasBundledChroot);
 
-        if (hasBundledChroot) {
-            // ── BUNDLED MODE: hide everything and auto-start immediately ──
+        if (foundLocalFile != null || useBundledAsset) {
+            // ── AUTOMATIC OFFLINE MODE: hide buttons and start installation ──
             wikiButton.setVisibility(View.GONE);
             selectFileButton.setVisibility(View.GONE);
             autoInstallButton.setVisibility(View.GONE);
-            description.setText("Preparing bundled chroot...");
+            description.setText("Preparing chroot installation...");
             SuUtils.copyAssets();
             SuUtils.checkFileOrFolder(SuUtils.CHROOT_PATH + "VERSION_5.0", alreadyInstalled -> {
                 if (alreadyInstalled) {
@@ -122,11 +118,19 @@ public class Slide3 extends Fragment {
                         lottieAnimationView.setMinAndMaxFrame(31, 91);
                         lottieAnimationView.setRepeatCount(LottieDrawable.INFINITE);
                         lottieAnimationView.playAnimation();
-                        description.setText("Copying bundled chroot, please wait...");
+                        description.setText("Preparing archive file...");
                     });
                     new Thread(() -> {
                         try {
-                            java.io.InputStream in = context.getAssets().open("chroot_bundle.tar.gz");
+                            java.io.InputStream in;
+                            if (foundLocalFile != null) {
+                                Log.i(TAG, "Using local chroot file: " + foundLocalFile.getAbsolutePath());
+                                activity.runOnUiThread(() -> description.setText("Using local file: " + foundLocalFile.getName()));
+                                in = new java.io.FileInputStream(foundLocalFile);
+                            } else {
+                                Log.i(TAG, "Using bundled chroot asset");
+                                in = context.getAssets().open("chroot_bundle.tar.gz", android.content.res.AssetManager.ACCESS_STREAMING);
+                            }
                             java.io.File dest = new java.io.File(FileUtils.basePath + "/core.tar.gz");
                             java.io.FileOutputStream out = new java.io.FileOutputStream(dest);
                             byte[] buffer = new byte[65536];
@@ -137,21 +141,20 @@ public class Slide3 extends Fragment {
                                 total += bytesRead;
                                 final long mb = total / (1024 * 1024);
                                 activity.runOnUiThread(() ->
-                                        description.setText("Copying... " + mb + " MB / ~92 MB"));
+                                        description.setText("Preparing chroot... " + mb + " MB written"));
                             }
                             in.close();
                             out.flush();
                             out.close();
                             activity.runOnUiThread(() -> {
-                                description.setText("Copy complete. Extracting...");
+                                description.setText("Archive ready. Extracting chroot...");
                                 startInstallation();
                             });
-                        } catch (java.io.IOException e) {
-                            Log.e(TAG, "Failed to copy bundled chroot", e);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to prepare chroot file", e);
                             activity.runOnUiThread(() -> {
-                                // Bundled copy failed — fall back to manual picker
-                                description.setText("Bundled copy failed: " + e.getMessage()
-                                        + "\nPlease select the file manually.");
+                                description.setText("Error preparing chroot: " + e.getMessage()
+                                        + "\nPlease pick the file manually below.");
                                 selectFileButton.setVisibility(View.VISIBLE);
                                 autoInstallButton.setVisibility(View.VISIBLE);
                                 autoInstallButton.setText("Download");
@@ -163,11 +166,31 @@ public class Slide3 extends Fragment {
                 }
             });
         } else {
-            // ── NO BUNDLE: show buttons for download or manual pick ──
+            // ── NO LOCAL OR BUNDLED CHROOT FOUND: show manual pick / download buttons ──
             setupOnlineInstallButton();
         }
 
         return view;
+    }
+
+    /** Scans common local storage paths for an existing chroot tar.gz archive. */
+    private File findLocalChrootFile() {
+        String[] possiblePaths = {
+                "/sdcard/Download/chroot_v5b_64.tar.gz",
+                "/sdcard/Download/chroot64-debian.tar.gz",
+                "/sdcard/Download/chroot64.tar.gz",
+                "/sdcard/Stryker5/chroot_v5b_64.tar.gz",
+                "/sdcard/chroot_v5b_64.tar.gz",
+                FileUtils.basePath + "/core.tar.gz"
+        };
+        for (String path : possiblePaths) {
+            File f = new File(path);
+            if (f.exists() && f.isFile() && f.length() > 10 * 1024 * 1024) { // > 10MB
+                Log.d(TAG, "Found existing local chroot file at: " + path + " (" + (f.length() / (1024 * 1024)) + " MB)");
+                return f;
+            }
+        }
+        return null;
     }
 
     /** Configures the autoInstallButton for the online (GitHub) download path. */

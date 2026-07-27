@@ -31,10 +31,12 @@ android {
         buildConfig true
     }
 
+    aaptOptions {
+        noCompress 'tar.gz', 'gz', 'tgz', 'chroot_bundle.tar.gz'
+    }
+
     androidResources {
-        // Prevent AAPT2 from compressing already-compressed files.
-        // Without this, AssetManager cannot read large .tar.gz assets (>1MB).
-        noCompress += ["tar.gz", "gz"]
+        noCompress 'tar.gz', 'gz', 'tgz', 'chroot_bundle.tar.gz'
     }
 }
 configurations {
