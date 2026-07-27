@@ -77,6 +77,19 @@ public class Slide3 extends Fragment {
 
         selectFileButton.setOnClickListener(view1 -> openFilePicker());
 
+        // Check upfront if a bundled chroot is packed inside the APK
+        boolean hasBundledChroot = false;
+        try {
+            context.getAssets().open("chroot_bundle.tar.gz").close();
+            hasBundledChroot = true;
+        } catch (java.io.IOException ignored) {}
+
+        if (hasBundledChroot) {
+            autoInstallButton.setText("Install (Offline)");
+        }
+
+        final boolean bundledAvailable = hasBundledChroot;
+
         autoInstallButton.setOnClickListener(view1 -> {
             lottieAnimationView.setRepeatCount(0);
             lottieAnimationView.setAnimation(R.raw.download);
@@ -94,31 +107,73 @@ public class Slide3 extends Fragment {
             autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
             FileUtils fileUtils = new FileUtils();
             fileUtils.createFolder("cache");
-            SuUtils.checkFileOrFolder(SuUtils.CHROOT_PATH+"VERSION_5.0", aBoolean -> {
+            SuUtils.checkFileOrFolder(SuUtils.CHROOT_PATH + "VERSION_5.0", aBoolean -> {
                 SuUtils.copyAssets();
-                if (!aBoolean){
-                    fileUtils.downloadFile(activity, "https://github.com/zalexdev/strykerapp/releases/download/chroot-main/chroot_v5b_64.tar.gz", "core.tar.gz",
-                            progress -> {
-                                lottieAnimationView.setFrame(120 + progress);
-                                lottieAnimationView.setRepeatCount(0);
-                            },
-                            autoInstallButton::setText,
-                            isOk -> {
-                                if (isOk){
-                                    startInstallation();
-                                    autoInstallButton.setText("Installing...");
-                                    lottieAnimationView.setMinAndMaxFrame(31,91);
-                                    lottieAnimationView.setRepeatCount(LottieDrawable.INFINITE);
-                                    lottieAnimationView.playAnimation();
-                                }else {
-                                    description.setText("Error downloading core. Check your internet connection and try again");
-                                    ACRA.getErrorReporter().handleSilentException(new Exception("Error downloading core"));
+                if (!aBoolean) {
+                    if (bundledAvailable) {
+                        // ── OFFLINE: extract bundled chroot from inside the APK ──
+                        autoInstallButton.setText("Extracting bundled chroot...");
+                        description.setText("Copying bundled chroot from app to storage, please wait...");
+                        lottieAnimationView.setMinAndMaxFrame(31, 91);
+                        lottieAnimationView.setRepeatCount(LottieDrawable.INFINITE);
+                        lottieAnimationView.playAnimation();
+                        new Thread(() -> {
+                            try {
+                                java.io.InputStream in = context.getAssets().open("chroot_bundle.tar.gz");
+                                java.io.File dest = new java.io.File(FileUtils.basePath + "/core.tar.gz");
+                                java.io.FileOutputStream out = new java.io.FileOutputStream(dest);
+                                byte[] buffer = new byte[65536];
+                                int bytesRead;
+                                long total = 0;
+                                while ((bytesRead = in.read(buffer)) != -1) {
+                                    out.write(buffer, 0, bytesRead);
+                                    total += bytesRead;
+                                    final long mb = total / (1024 * 1024);
+                                    activity.runOnUiThread(() -> description.setText("Copying... " + mb + " MB written"));
                                 }
-
-
+                                in.close();
+                                out.flush();
+                                out.close();
+                                activity.runOnUiThread(() -> {
+                                    autoInstallButton.setText("Installing...");
+                                    description.setText("Bundled chroot copied. Starting extraction...");
+                                    startInstallation();
+                                });
+                            } catch (java.io.IOException e) {
+                                Log.e(TAG, "Failed to copy bundled chroot", e);
+                                activity.runOnUiThread(() -> {
+                                    description.setText("Error reading bundled chroot: " + e.getMessage());
+                                    autoInstallButton.setEnabled(true);
+                                    autoInstallButton.setText("Retry");
+                                    selectFileButton.setVisibility(View.VISIBLE);
+                                });
                             }
-                    );
-                }else {
+                        }).start();
+                    } else {
+                        // ── ONLINE: download from GitHub ──
+                        fileUtils.downloadFile(activity, "https://github.com/zalexdev/strykerapp/releases/download/chroot-main/chroot_v5b_64.tar.gz", "core.tar.gz",
+                                progress -> {
+                                    lottieAnimationView.setFrame(120 + progress);
+                                    lottieAnimationView.setRepeatCount(0);
+                                },
+                                autoInstallButton::setText,
+                                isOk -> {
+                                    if (isOk) {
+                                        startInstallation();
+                                        autoInstallButton.setText("Installing...");
+                                        lottieAnimationView.setMinAndMaxFrame(31, 91);
+                                        lottieAnimationView.setRepeatCount(LottieDrawable.INFINITE);
+                                        lottieAnimationView.playAnimation();
+                                    } else {
+                                        description.setText("Error downloading core. Check your internet connection and try again");
+                                        ACRA.getErrorReporter().handleSilentException(new Exception("Error downloading core"));
+                                        autoInstallButton.setEnabled(true);
+                                        selectFileButton.setVisibility(View.VISIBLE);
+                                    }
+                                }
+                        );
+                    }
+                } else {
                     Preferences.getInstance().setInstalled();
                     Preferences.getInstance().toaster("Core already installed");
                     Preferences.getInstance().replaceFragment(new Slide4(), "Slide4");

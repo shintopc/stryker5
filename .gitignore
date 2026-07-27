@@ -22,3 +22,6 @@ local.properties
 /libslirp.so
 /qemu-system-aarch64
 /rootfs.imgz
+
+# Bundled chroot asset - copy manually from chroot_v5b_64.tar.gz
+/app/src/main/assets/chroot_bundle.tar.gz

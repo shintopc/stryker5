@@ -351,6 +351,8 @@ public class SuUtils {
             new File(Utils.fileDir).mkdirs();
             assert files != null;
             for (String filename : files) {
+                // Skip the large bundled chroot - it is only used once during setup
+                if (filename.equals("chroot_bundle.tar.gz")) continue;
                 InputStream in = null;
                 OutputStream out = null;
                 try {
