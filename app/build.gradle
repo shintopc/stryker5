@@ -28,8 +28,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     buildFeatures {
-
         buildConfig true
+    }
+
+    androidResources {
+        // Prevent AAPT2 from compressing already-compressed files.
+        // Without this, AssetManager cannot read large .tar.gz assets (>1MB).
+        noCompress += ["tar.gz", "gz"]
     }
 }
 configurations {

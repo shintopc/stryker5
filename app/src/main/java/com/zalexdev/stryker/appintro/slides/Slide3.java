@@ -77,19 +77,32 @@ public class Slide3 extends Fragment {
 
         selectFileButton.setOnClickListener(view1 -> openFilePicker());
 
-        // Detect bundled chroot by listing assets (lightweight — doesn't open the 92MB file)
+        // Detect bundled chroot - try both listing and opening to be robust
         boolean hasBundledChroot = false;
         try {
+            // Method 1: list() to check presence
             String[] assets = context.getAssets().list("");
             if (assets != null) {
                 for (String name : assets) {
                     if ("chroot_bundle.tar.gz".equals(name)) {
                         hasBundledChroot = true;
+                        Log.d(TAG, "chroot_bundle.tar.gz found via list()");
                         break;
                     }
                 }
             }
-        } catch (java.io.IOException ignored) {}
+            // Method 2: if list() missed it, try open() directly
+            if (!hasBundledChroot) {
+                java.io.InputStream test = context.getAssets().open("chroot_bundle.tar.gz");
+                test.close();
+                hasBundledChroot = true;
+                Log.d(TAG, "chroot_bundle.tar.gz found via open()");
+            }
+        } catch (java.io.IOException e) {
+            Log.w(TAG, "chroot_bundle.tar.gz NOT found in assets: " + e.getMessage());
+        }
+
+        Log.d(TAG, "hasBundledChroot = " + hasBundledChroot);
 
         if (hasBundledChroot) {
             // ── BUNDLED MODE: hide everything and auto-start immediately ──
