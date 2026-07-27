@@ -26,7 +26,7 @@ public class SuUtils {
     public static final String MOUNTED_CHROOT_PATH = "/data/local/stryker5/release/sdcard/Stryker5/";
     public static final String UNMOUNTED_CHROOT_PATH = "/data/local/stryker5/release/";
     public static String mountFile = Utils.fileDir + "bootroot ";
-    public static String unMountFile =  Utils.fileDir + "killroot ";
+    public static String unMountFile = Utils.fileDir + "killroot ";
     public static String execute = Utils.fileDir + "chroot_exec ";
     public static String busybox = "/data/data/com.zalexdev.stryker5/files/busybox ";
     public static String tar = "/data/data/com.zalexdev.stryker5/files/busybox tar ";
@@ -40,9 +40,52 @@ public class SuUtils {
         return contains(ExecutorBuilder.runCommand("id"), "uid=0");
     }
 
+    public static void ensureAssetsCopied() {
+        File bootrootFile = new File(Utils.fileDir, "bootroot");
+        File busyboxFile = new File(Utils.fileDir, "busybox");
+        File chrootExecFile = new File(Utils.fileDir, "chroot_exec");
+        File killrootFile = new File(Utils.fileDir, "killroot");
 
+        if (!bootrootFile.exists() || !busyboxFile.exists() || !chrootExecFile.exists() || !killrootFile.exists()
+                || bootrootFile.length() == 0 || busyboxFile.length() == 0 || chrootExecFile.length() == 0 || killrootFile.length() == 0) {
+            Log.w(TAG, "Critical boot/chroot files are missing! Copying synchronously...");
+            copyAssetsSync();
+        }
+    }
+
+    public static void copyAssetsSync() {
+        String[] files = null;
+        try {
+            files = Preferences.getInstance().getContext().getAssets().list("");
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to get asset file list synchronously.", e);
+        }
+        new File(Utils.fileDir).mkdirs();
+        if (files != null) {
+            for (String filename : files) {
+                if (filename.equals("chroot_bundle.tar.gz"))
+                    continue;
+                InputStream in = null;
+                OutputStream out = null;
+                try {
+                    in = Preferences.getInstance().getContext().getAssets().open(filename);
+                    File outFile = new File(Utils.fileDir, filename);
+                    out = java.nio.file.Files.newOutputStream(outFile.toPath());
+                    copyFile(in, out);
+                    in.close();
+                    out.flush();
+                    out.close();
+                    Log.d(TAG, "Copied asset synchronously: " + filename);
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to copy asset file synchronously: " + filename, e);
+                }
+            }
+        }
+        ExecutorBuilder.runCommand("chmod 777 " + Utils.fileDir + "*");
+    }
 
     public static void mountChroot(Consumer<String> lines, Consumer<Boolean> ok) {
+        ensureAssetsCopied();
         ExecutorBuilder.runCommand("chmod 777 " + Utils.fileDir + "*");
         ExecutorBuilder.customMegaCommand(mountFile, strings -> {
             if (lines != null) {
@@ -54,13 +97,14 @@ public class SuUtils {
                 if (contains(strings, "The Chroot has been started")) {
                     ok.accept(true);
                 } else {
-                    checkFileOrFolder(CHROOT_PATH+"sdcard/handshakes", ok);
+                    checkFileOrFolder(CHROOT_PATH + "sdcard/handshakes", ok);
                 }
             }
         });
     }
 
     public static void unMountChroot(Consumer<Boolean> ok) {
+        ensureAssetsCopied();
         ExecutorBuilder executorBuilder = new ExecutorBuilder();
         executorBuilder.setCommand(unMountFile);
         executorBuilder.setOnFinished((output) -> {
@@ -111,8 +155,8 @@ public class SuUtils {
             ArrayList<Interface> interfaces = Interface.parse(strings);
             if (type == 0) {
                 activity.runOnUiThread(() -> output.accept(interfaces));
-            } else if (type == 1){
-                //filter only type managed
+            } else if (type == 1) {
+                // filter only type managed
                 ArrayList<Interface> managed = new ArrayList<>();
                 for (Interface iface : interfaces) {
                     if (iface.type.equals("managed")) {
@@ -120,8 +164,8 @@ public class SuUtils {
                     }
                 }
                 activity.runOnUiThread(() -> output.accept(managed));
-            } else if (type == 2){
-                //filter only type AP
+            } else if (type == 2) {
+                // filter only type AP
                 ArrayList<Interface> ap = new ArrayList<>();
                 for (Interface iface : interfaces) {
                     if (iface.type.equals("AP")) {
@@ -129,8 +173,8 @@ public class SuUtils {
                     }
                 }
                 activity.runOnUiThread(() -> output.accept(ap));
-            } else if (type == 3){
-                //filter only type monitor
+            } else if (type == 3) {
+                // filter only type monitor
                 ArrayList<Interface> monitor = new ArrayList<>();
                 for (Interface iface : interfaces) {
                     if (iface.type.equals("monitor")) {
@@ -149,8 +193,8 @@ public class SuUtils {
         ArrayList<Interface> interfaces = Interface.parse(output);
         if (type == 0) {
             return interfaces;
-        } else if (type == 1){
-            //filter only type managed
+        } else if (type == 1) {
+            // filter only type managed
             ArrayList<Interface> managed = new ArrayList<>();
             for (Interface iface : interfaces) {
                 if (iface.type.equals("managed")) {
@@ -158,8 +202,8 @@ public class SuUtils {
                 }
             }
             return managed;
-        } else if (type == 2){
-            //filter only type AP
+        } else if (type == 2) {
+            // filter only type AP
             ArrayList<Interface> ap = new ArrayList<>();
             for (Interface iface : interfaces) {
                 if (iface.type.equals("AP")) {
@@ -167,8 +211,8 @@ public class SuUtils {
                 }
             }
             return ap;
-        } else if (type == 3){
-            //filter only type monitor
+        } else if (type == 3) {
+            // filter only type monitor
             ArrayList<Interface> monitor = new ArrayList<>();
             for (Interface iface : interfaces) {
                 if (iface.type.equals("monitor")) {
@@ -177,7 +221,7 @@ public class SuUtils {
                 }
             }
             return monitor;
-        }else{
+        } else {
             return new ArrayList<>();
         }
 
@@ -201,15 +245,14 @@ public class SuUtils {
 
     }
 
-
-    public static void checkFileOrFolder (String fileOrFolder, Consumer<Boolean> ok) {
+    public static void checkFileOrFolder(String fileOrFolder, Consumer<Boolean> ok) {
         ExecutorBuilder executorBuilder = new ExecutorBuilder();
         executorBuilder.setCommand("ls " + fileOrFolder);
         executorBuilder.setActivity(Preferences.getInstance().getActivity());
         executorBuilder.setOnFinished((output) -> {
             Log.d(TAG, "checkFileOrFolder: " + output);
             if (ok != null) {
-                if (ExecutorBuilder.contains(output,fileOrFolder) || executorBuilder.exitCodeInt == 0) {
+                if (ExecutorBuilder.contains(output, fileOrFolder) || executorBuilder.exitCodeInt == 0) {
                     ok.accept(true);
                 } else {
                     ok.accept(false);
@@ -245,7 +288,7 @@ public class SuUtils {
 
     }
 
-    public static void setMonitorModeWlan1(Activity activity,String wlan, Consumer<Boolean> ok) {
+    public static void setMonitorModeWlan1(Activity activity, String wlan, Consumer<Boolean> ok) {
         ExecutorBuilder executorBuilder = new ExecutorBuilder();
         executorBuilder.setCommand(Preferences.getInstance().getExternalMonCmd(wlan));
         executorBuilder.setChroot(Preferences.getInstance().getExternalMonCmdChroot());
@@ -271,10 +314,10 @@ public class SuUtils {
     }
 
     public static boolean setMonitorModeWlan0() {
-        if (Preferences.getInstance().getInternalMonCmdChroot()){
+        if (Preferences.getInstance().getInternalMonCmdChroot()) {
             ExecutorBuilder.runCommandChroot(Preferences.getInstance().getInternalMonCmd());
 
-        }else {
+        } else {
             ExecutorBuilder.runCommand(Preferences.getInstance().getInternalMonCmd());
         }
         ArrayList<Interface> mon = getInterfaces(3);
@@ -289,9 +332,9 @@ public class SuUtils {
     }
 
     public static boolean setMonitorModeWlan1(String wlan) {
-        if (Preferences.getInstance().getExternalMonCmdChroot()){
+        if (Preferences.getInstance().getExternalMonCmdChroot()) {
             ExecutorBuilder.runCommandChroot(Preferences.getInstance().getExternalMonCmd(wlan));
-        }else {
+        } else {
             ExecutorBuilder.runCommand(Preferences.getInstance().getExternalMonCmd(wlan));
         }
         ArrayList<Interface> mon = getInterfaces(3);
@@ -307,9 +350,9 @@ public class SuUtils {
     }
 
     public static boolean setManagedModeWlan0() {
-        if (Preferences.getInstance().getInternalMonCmdChroot()){
+        if (Preferences.getInstance().getInternalMonCmdChroot()) {
             ExecutorBuilder.runCommandChroot(Preferences.getInstance().getInternalMonCmdOff());
-        }else {
+        } else {
             ExecutorBuilder.runCommand(Preferences.getInstance().getInternalMonCmdOff());
         }
         ArrayList<Interface> mon = getInterfaces(1);
@@ -324,9 +367,9 @@ public class SuUtils {
     }
 
     public static boolean setManagedModeWlan1(String wlan) {
-        if (Preferences.getInstance().getExternalMonCmdChroot()){
+        if (Preferences.getInstance().getExternalMonCmdChroot()) {
             ExecutorBuilder.runCommandChroot(Preferences.getInstance().getExternalMonCmdOff(wlan));
-        }else {
+        } else {
             ExecutorBuilder.runCommand(Preferences.getInstance().getExternalMonCmdOff(wlan));
         }
         ArrayList<Interface> mon = getInterfaces(1);
@@ -341,6 +384,10 @@ public class SuUtils {
     }
 
     public static void copyAssets() {
+        copyAssets(null);
+    }
+
+    public static void copyAssets(Consumer<Boolean> onComplete) {
         new Thread(() -> {
             String[] files = null;
             try {
@@ -349,27 +396,35 @@ public class SuUtils {
                 Log.e("tag", "Failed to get asset file list.", e);
             }
             new File(Utils.fileDir).mkdirs();
-            assert files != null;
-            for (String filename : files) {
-                // Skip the large bundled chroot - it is only used once during setup
-                if (filename.equals("chroot_bundle.tar.gz")) continue;
-                InputStream in = null;
-                OutputStream out = null;
-                try {
-                    in = Preferences.getInstance().getContext().getAssets().open(filename);
-                    File outFile = new File(Utils.fileDir, filename);
-                    out = Files.newOutputStream(outFile.toPath());
-                    copyFile(in, out);
-                    in.close();
-                    out.flush();
-                    out.close();
-                } catch (IOException e) {
-                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+            boolean success = true;
+            if (files != null) {
+                for (String filename : files) {
+                    // Skip the large bundled chroot - it is only used once during setup
+                    if (filename.equals("chroot_bundle.tar.gz"))
+                        continue;
+                    InputStream in = null;
+                    OutputStream out = null;
+                    try {
+                        in = Preferences.getInstance().getContext().getAssets().open(filename);
+                        File outFile = new File(Utils.fileDir, filename);
+                        out = Files.newOutputStream(outFile.toPath());
+                        copyFile(in, out);
+                        in.close();
+                        out.flush();
+                        out.close();
+                    } catch (IOException e) {
+                        Log.e("tag", "Failed to copy asset file: " + filename, e);
+                        success = false;
+                    }
                 }
             }
             ExecutorBuilder chmod = new ExecutorBuilder();
-            chmod.setCommand("chmod 777 " + Utils.fileDir+"*");
+            chmod.setCommand("chmod 777 " + Utils.fileDir + "*");
             chmod.execute();
+
+            if (onComplete != null) {
+                onComplete.accept(success);
+            }
         }).start();
     }
 
@@ -380,6 +435,5 @@ public class SuUtils {
             out.write(buffer, 0, read);
         }
     }
-
 
 }
