@@ -9,7 +9,8 @@ FROM_ZALEXDEV_TO_WORLD=$(readlink -f $0)
 
 ######### CHECK IF WORKING CHROOT DIR EXISTS #########
 f_chk_chroot() {
-    [ ! -f $MNT$CHROOT_EXEC ] && echo "[-] sudo not installed." && return 1
+    # Check if the chroot has a basic shell - /bin/sh is always present
+    [ ! -f $MNT/bin/sh ] && echo "[-] Chroot shell not found. Extraction may have failed." && return 1
     if ! $BUSYBOX chroot $MNT /bin/uname; then
         echo "[-] Chroot is corrupted. Error code [-0]"
         return 1

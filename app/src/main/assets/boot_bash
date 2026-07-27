@@ -1,5 +1,4 @@
 #!/system/bin/sh
-BUSYBOX=/data/data/com.zalexdev.stryker/files/busybox
-MNT=/data/local/stryker/release/
-CHROOT_EXEC=/usr/bin/sudo
-$BUSYBOX chroot $MNT $CHROOT_EXEC -E PATH=$PATH ash
+BUSYBOX=/data/data/com.zalexdev.stryker5/files/busybox
+MNT=/data/local/stryker5/release/
+$BUSYBOX chroot $MNT /bin/sh -l && exit

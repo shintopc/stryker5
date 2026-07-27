@@ -4,4 +4,4 @@
 FROM_ZALEXDEV_TO_WORLD=$(readlink -f $0)
 . ${FROM_ZALEXDEV_TO_WORLD%/*}/bootroot
 
-$BUSYBOX chroot $MNT $CHROOT_EXEC -E PATH=$PATH login su
+$BUSYBOX chroot $MNT /bin/sh -l
