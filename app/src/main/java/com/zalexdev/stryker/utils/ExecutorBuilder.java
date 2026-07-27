@@ -154,7 +154,7 @@ public class ExecutorBuilder {
             try {
                 process = Runtime.getRuntime().exec("su --mount-master");
                 if (isChroot) {
-                    process.getOutputStream().write((SuUtils.execute + " bash\n").getBytes());
+                    process.getOutputStream().write((SuUtils.execute + " sh\n").getBytes());
                     process.getOutputStream().flush();
                     process.getOutputStream().write(("export TMPDIR=/tmp\n").getBytes());
                     process.getOutputStream().flush();
@@ -341,7 +341,7 @@ public class ExecutorBuilder {
             try {
                 process = Runtime.getRuntime().exec("su --mount-master");
                 if (isChroot) {
-                    process.getOutputStream().write((SuUtils.execute + " bash\n").getBytes());
+                    process.getOutputStream().write((SuUtils.execute + " sh\n").getBytes());
                     process.getOutputStream().flush();
                     process.getOutputStream().write(("export TMPDIR=/tmp\n").getBytes());
                     process.getOutputStream().flush();
@@ -646,7 +646,7 @@ public class ExecutorBuilder {
         DebugData debugData = DebugData.getInstance();
         try {
             Process process = Runtime.getRuntime().exec("su --mount-master");
-            process.getOutputStream().write((SuUtils.execute + " bash\n").getBytes());
+            process.getOutputStream().write((SuUtils.execute + " sh\n").getBytes());
             process.getOutputStream().flush();
             process.getOutputStream().write((command + "\n").getBytes());
             process.getOutputStream().flush();
