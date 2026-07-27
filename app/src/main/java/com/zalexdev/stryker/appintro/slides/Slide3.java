@@ -163,6 +163,10 @@ public class Slide3 extends Fragment {
         for (String folder : folders) {
             ExecutorBuilder.runCommand("umount -l " + corePath + folder);
         }
+        ExecutorBuilder.runCommand("umount -l " + corePath);
+        ExecutorBuilder.runCommand("umount -f " + corePath);
+        ExecutorBuilder.runCommand("umount -l /data/local/stryker5");
+        ExecutorBuilder.runCommand("umount -f /data/local/stryker5");
 
         // Now double check if they're really unmounted
         for (String folder : folders) {
@@ -216,12 +220,25 @@ public class Slide3 extends Fragment {
                 executorBuilder.setActivity(activity);
                 executorBuilder.setContext(context);
                 String downloadChrootPath = FileUtils.basePath + "/core.tar.gz";
-                executorBuilder.setCommand(SuUtils.busybox + "tar -xvf " + downloadChrootPath + " -C /data/local/stryker5/");
+                executorBuilder.setCommand(SuUtils.busybox + "tar -xzvf " + downloadChrootPath + " -C /data/local/stryker5/");
                 executorBuilder.setActivity(activity);
                 executorBuilder.setError(s -> description.setText(s));
                 executorBuilder.setChroot(false);
                 executorBuilder.setOutput(s -> description.setText(s));
                 executorBuilder.setOnFinished(strings -> {
+                    if (executorBuilder.exitCodeInt != 0) {
+                        Log.e(TAG, "installCore: Extraction failed with code " + executorBuilder.exitCodeInt);
+                        createOrUpdateNotification("Error extracting core");
+                        activity.runOnUiThread(() -> {
+                            description.setText("Extraction failed (code: " + executorBuilder.exitCodeInt + "). Please verify the file is valid.");
+                            autoInstallButton.setEnabled(true);
+                            autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
+                            autoInstallButton.setText("Retry");
+                            autoInstallButton.setOnClickListener(view1 -> startInstallation());
+                        });
+                        return;
+                    }
+
                     ExecutorBuilder e = new ExecutorBuilder();
                     e.setCommand("echo 5.0 > /VERSION_5.0");
                     e.setChroot(true);

@@ -27,9 +27,9 @@ public class SuUtils {
     public static final String UNMOUNTED_CHROOT_PATH = "/data/local/stryker5/release/";
     public static String mountFile = Utils.fileDir + "bootroot ";
     public static String unMountFile =  Utils.fileDir + "killroot ";
-    public static String execute = "." + Utils.fileDir + "chroot_exec ";
-    public static String busybox = "./data/data/com.zalexdev.stryker5/files/busybox ";
-    public static String tar = "./data/data/com.zalexdev.stryker5/files/busybox tar ";
+    public static String execute = Utils.fileDir + "chroot_exec ";
+    public static String busybox = "/data/data/com.zalexdev.stryker5/files/busybox ";
+    public static String tar = "/data/data/com.zalexdev.stryker5/files/busybox tar ";
     public static String chmod = "chmod 777 ";
     public static String mkdir = "mkdir ";
     public static String rm = "rm -rf ";

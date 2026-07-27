@@ -206,12 +206,12 @@ public class Utils {
 
     public static void disableMagiskNotification() {
         Log.d("Utils", "disableMagiskNotification: "+android.os.Process.myUid());
-        if (contains(ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker5/files/sqlite3 "
+        if (contains(ExecutorBuilder.runCommand("/data/data/com.zalexdev.stryker5/files/sqlite3 "
                 + "/data/adb/magisk.db"
                 + " \"UPDATE policies SET logging='0',notification='0' WHERE package_name='"
                 + "com.zalexdev.stryker5"
                 + "';\""), "no such"))
-        {ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker5/files/sqlite3 /data/adb/magisk.db"
+        {ExecutorBuilder.runCommand("/data/data/com.zalexdev.stryker5/files/sqlite3 /data/adb/magisk.db"
                 + " \"UPDATE policies SET logging='0',notification='0' WHERE uid='"
                 + android.os.Process.myUid()
                 + "';\"");}
