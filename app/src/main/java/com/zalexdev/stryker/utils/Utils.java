@@ -57,7 +57,7 @@ public class Utils {
 
     public void readPixieList() {
         try {
-            FileInputStream fis = new FileInputStream("/data/data/com.zalexdev.stryker/files/routes.txt");
+            FileInputStream fis = new FileInputStream("/data/data/com.zalexdev.stryker5/files/routes.txt");
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader bufferedReader = new BufferedReader(isr);
             String line;
@@ -75,7 +75,7 @@ public class Utils {
         try {
             if (db == null || !db.isOpen()) {
                 db = SQLiteDatabase.openDatabase(
-                    "/data/data/com.zalexdev.stryker/files/vendors.db",
+                    "/data/data/com.zalexdev.stryker5/files/vendors.db",
                     null,
                     SQLiteDatabase.OPEN_READONLY
                 );
@@ -103,7 +103,7 @@ public class Utils {
         try {
             if (dbCodename == null || !dbCodename.isOpen()) {
                 dbCodename = SQLiteDatabase.openDatabase(
-                    "/data/data/com.zalexdev.stryker/files/codenames.db",
+                    "/data/data/com.zalexdev.stryker5/files/codenames.db",
                     null,
                     SQLiteDatabase.OPEN_READONLY
                 );
@@ -128,10 +128,10 @@ public class Utils {
         return "";
     }
 
-    public static final String fileDir = "/data/data/com.zalexdev.stryker/files/";
+    public static final String fileDir = "/data/data/com.zalexdev.stryker5/files/";
     public static final String busybox = fileDir + "busybox ";
     public static final String tar = fileDir + "busybox tar ";
-    public static final String packageName = "com.zalexdev.stryker";
+    public static final String packageName = "com.zalexdev.stryker5";
     public static String currentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         return sdf.format(new Date());
@@ -206,12 +206,12 @@ public class Utils {
 
     public static void disableMagiskNotification() {
         Log.d("Utils", "disableMagiskNotification: "+android.os.Process.myUid());
-        if (contains(ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker/files/sqlite3 "
+        if (contains(ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker5/files/sqlite3 "
                 + "/data/adb/magisk.db"
                 + " \"UPDATE policies SET logging='0',notification='0' WHERE package_name='"
-                + "com.zalexdev.stryker"
+                + "com.zalexdev.stryker5"
                 + "';\""), "no such"))
-        {ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker/files/sqlite3 /data/adb/magisk.db"
+        {ExecutorBuilder.runCommand("./data/data/com.zalexdev.stryker5/files/sqlite3 /data/adb/magisk.db"
                 + " \"UPDATE policies SET logging='0',notification='0' WHERE uid='"
                 + android.os.Process.myUid()
                 + "';\"");}

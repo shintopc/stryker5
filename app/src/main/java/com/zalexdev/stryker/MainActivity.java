@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements UsbActionListener
             preferences.replaceFragment(new Slide1());
         } else {
             if (SuUtils.isRoot()) {
-                SuUtils.checkFileOrFolder("/data/local/stryker/release/VERSION_5.0", aBoolean -> {
+                SuUtils.checkFileOrFolder("/data/local/stryker5/release/VERSION_5.0", aBoolean -> {
                     if (aBoolean) {
 
 

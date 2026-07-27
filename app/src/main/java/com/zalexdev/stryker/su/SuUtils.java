@@ -22,14 +22,14 @@ import java.util.function.Consumer;
 
 public class SuUtils {
     public static final String TAG = "SuUtils";
-    public static final String CHROOT_PATH = "/data/local/stryker/release/";
-    public static final String MOUNTED_CHROOT_PATH = "/data/local/stryker/release/sdcard/Stryker/";
-    public static final String UNMOUNTED_CHROOT_PATH = "/data/local/stryker/release/";
+    public static final String CHROOT_PATH = "/data/local/stryker5/release/";
+    public static final String MOUNTED_CHROOT_PATH = "/data/local/stryker5/release/sdcard/Stryker5/";
+    public static final String UNMOUNTED_CHROOT_PATH = "/data/local/stryker5/release/";
     public static String mountFile = Utils.fileDir + "bootroot ";
     public static String unMountFile =  Utils.fileDir + "killroot ";
     public static String execute = "." + Utils.fileDir + "chroot_exec ";
-    public static String busybox = "./data/data/com.zalexdev.stryker/files/busybox ";
-    public static String tar = "./data/data/com.zalexdev.stryker/files/busybox tar ";
+    public static String busybox = "./data/data/com.zalexdev.stryker5/files/busybox ";
+    public static String tar = "./data/data/com.zalexdev.stryker5/files/busybox tar ";
     public static String chmod = "chmod 777 ";
     public static String mkdir = "mkdir ";
     public static String rm = "rm -rf ";

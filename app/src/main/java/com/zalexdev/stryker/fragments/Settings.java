@@ -68,7 +68,7 @@ public class Settings extends Fragment {
                     SuUtils.unMountChroot(aBoolean1 -> {
                         if (aBoolean1) {
                             new  Thread(() -> {
-                                ExecutorBuilder.runCommand("rm -rf /data/local/stryker");
+                                ExecutorBuilder.runCommand("rm -rf /data/local/stryker5");
                                 ExecutorBuilder.runCommand("pm uninstall com.zalexdev.stryker");
                             }).start();
                         } else {

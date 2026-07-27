@@ -8,7 +8,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.zalexdev.stryker"
+        applicationId "com.zalexdev.stryker5"
         minSdk 27
         targetSdk 34
         versionCode 1
@@ -63,7 +63,6 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
     implementation 'com.github.smart-fun:XmlToJson:1.5.3'
     implementation "com.ncorti:slidetoact:0.11.0"
-    implementation 'com.race604.waveloading:library:1.1.1'
     implementation "ch.acra:acra-http:$acraVersion"
     implementation "ch.acra:acra-toast:$acraVersion"
     implementation "ch.acra:acra-advanced-scheduler:$acraVersion"

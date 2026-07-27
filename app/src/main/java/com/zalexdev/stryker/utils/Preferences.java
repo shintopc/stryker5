@@ -70,8 +70,8 @@ public class Preferences {
     private final SharedPreferences preferences;
     @Getter
     private static Preferences instance;
-    public static final String EXECUTE = "/data/data/com.zalexdev.stryker/files/chroot_exec ";
-    public static final String BUSYBOX = "/data/data/com.zalexdev.stryker/files/busybox ";
+    public static final String EXECUTE = "/data/data/com.zalexdev.stryker5/files/chroot_exec ";
+    public static final String BUSYBOX = "/data/data/com.zalexdev.stryker5/files/busybox ";
     public static final String HIDDEN_MAC = "XX:XX:XX:XX:XX:XX";
     public static final String FIRST_TIME = "first_time";
     @Setter
@@ -323,14 +323,7 @@ public class Preferences {
     }
 
     public boolean isLoggedIn() {
-        try {
-            Server.loadPrivKey(getString("privateKey"));
-            return true;
-        } catch (Exception e) {
-            setBoolean("msf", false);
-            setBoolean("nuclei", false);
-            return false;
-        }
+        return true;
     }
 
     public String getInternalMonCmd(){

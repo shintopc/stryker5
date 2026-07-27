@@ -61,22 +61,22 @@ public class SavedWiFi extends Fragment {
                 data.add(network.toBase64String());
             }
             String date = utils.getDateString();
-            FileUtils.writeToFile( "StrykerWifi_"+date+".txt",data);
-            SuUtils.moveFile(FileUtils.basePath+"/StrykerWifi_"+date+".txt", "/sdcard/Stryker/StrykerWifi_"+date+".txt");
+            FileUtils.writeToFile( "Stryker5Wifi_"+date+".txt",data);
+            SuUtils.moveFile(FileUtils.basePath+"/Stryker5Wifi_"+date+".txt", "/sdcard/Stryker5/Stryker5Wifi_"+date+".txt");
         });
         importin.setOnClickListener(v -> {
-            ArrayList<String> data = new ArrayList<>(ExecutorBuilder.runCommand("cat /sdcard/Stryker/StrykerWifi_*.txt"));
+            ArrayList<String> data = new ArrayList<>(ExecutorBuilder.runCommand("cat /sdcard/Stryker5/Stryker5Wifi_*.txt"));
             for (String line : data) {
                 if (!line.contains("No such file or directory")){
                     Preferences.getInstance().addWifi(WifiNetwork.fromBase64String(line));
                 }else{
-                    Preferences.getInstance().toaster("No saved networks found. Reanme files to StrykerWifi_*.txt and try again.");
+                    Preferences.getInstance().toaster("No saved networks found. Reanme files to Stryker5Wifi_*.txt and try again.");
                 }
             }
             getNetworks();
             //reanme imported files
-            for (String file : ExecutorBuilder.runCommand("ls /sdcard/Stryker/StrykerWifi_*.txt")) {
-                SuUtils.moveFile(file, file.replace("/sdcard/Stryker/StrykerWifi_", "/sdcard/Stryker/StrykerImported_"));
+            for (String file : ExecutorBuilder.runCommand("ls /sdcard/Stryker5/Stryker5Wifi_*.txt")) {
+                SuUtils.moveFile(file, file.replace("/sdcard/Stryker5/Stryker5Wifi_", "/sdcard/Stryker5/Stryker5Imported_"));
             }
         });
         getNetworks();

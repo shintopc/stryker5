@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Large Binaries
+/Image
+/chroot64-debian.tar.gz
+/chroot_v5b_64.tar.gz
+/initrd.img
+/libslirp.so
+/qemu-system-aarch64
+/rootfs.imgz

@@ -146,7 +146,7 @@ public class Slide3 extends Fragment {
     }
 
     public boolean preCoreRemoval() {
-        String corePath = "/data/local/stryker/release";
+        String corePath = "/data/local/stryker5/release";
         boolean allOk = true;
 
         // Paths to check
@@ -191,17 +191,17 @@ public class Slide3 extends Fragment {
             });
         }else {
 
-            SuUtils.removeFile("/data/local/stryker/");
-            SuUtils.createFolder("/data/local/stryker/");
-            SuUtils.createFolder("/data/local/stryker/release");
-            SuUtils.createFolder("/sdcard/Stryker");
-            SuUtils.createFolder("/sdcard/Stryker/.temp");
-            SuUtils.createFolder("/sdcard/Stryker/handshakes");
-            SuUtils.createFolder("/sdcard/Stryker/scripts");
-            SuUtils.createFolder("/sdcard/Stryker/wordlists");
+            SuUtils.removeFile("/data/local/stryker5/");
+            SuUtils.createFolder("/data/local/stryker5/");
+            SuUtils.createFolder("/data/local/stryker5/release");
+            SuUtils.createFolder("/sdcard/Stryker5");
+            SuUtils.createFolder("/sdcard/Stryker5/.temp");
+            SuUtils.createFolder("/sdcard/Stryker5/handshakes");
+            SuUtils.createFolder("/sdcard/Stryker5/scripts");
+            SuUtils.createFolder("/sdcard/Stryker5/wordlists");
             SuUtils.copyAssets();
 
-            ExecutorBuilder.runCommand("chmod 777 /data/data/com.zalexdev.stryker/files/*");
+            ExecutorBuilder.runCommand("chmod 777 /data/data/com.zalexdev.stryker5/files/*");
             SuUtils.unMountChroot(b -> {
 
 
@@ -209,7 +209,7 @@ public class Slide3 extends Fragment {
                 executorBuilder.setActivity(activity);
                 executorBuilder.setContext(context);
                 String downloadChrootPath = FileUtils.basePath + "/core.tar.gz";
-                executorBuilder.setCommand(SuUtils.busybox + "tar -xvf " + downloadChrootPath + " -C /data/local/stryker/");
+                executorBuilder.setCommand(SuUtils.busybox + "tar -xvf " + downloadChrootPath + " -C /data/local/stryker5/");
                 executorBuilder.setActivity(activity);
                 executorBuilder.setError(s -> description.setText(s));
                 executorBuilder.setChroot(false);
@@ -220,7 +220,7 @@ public class Slide3 extends Fragment {
                     e.setChroot(true);
                     e.setOnFinished(strings1 -> {
                         Log.d(TAG, "accept: " + strings1);
-                        SuUtils.checkFileOrFolder("/data/local/stryker/release/VERSION_5.0", aBoolean -> {
+                        SuUtils.checkFileOrFolder("/data/local/stryker5/release/VERSION_5.0", aBoolean -> {
                             if (aBoolean) {
                                 SuUtils.mountChroot(null, s -> Log.d(TAG, "installCore: " + s));
                                 Log.d(TAG, "installCore: Core installed");

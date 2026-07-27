@@ -4,7 +4,7 @@
 unset LD_PRELOAD
 
 ## Define the owner app package name.
-APP_PGK_NAME=com.zalexdev.stryker
+APP_PGK_NAME=com.zalexdev.stryker5
 
 ## Define chroot sudo path
 CHROOT_EXEC=/usr/bin/sudo
@@ -21,7 +21,7 @@ chmod 777 /data/data/$APP_PGK_NAME/files/chroot_exec
 chmod 777 /data/data/$APP_PGK_NAME/files/boot_bash
 
 ## Define chroot path to MNT variable.
-MNT="/data/local/stryker/release/"
+MNT="/data/local/stryker5/release/"
 
 ## Validate busybox path.
 if [ -z "$BUSYBOX" ]; then

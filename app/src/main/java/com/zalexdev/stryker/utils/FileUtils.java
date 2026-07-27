@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 public class FileUtils {
 
     @SuppressLint("SdCardPath")
-    public static final String basePath = "/data/data/com.zalexdev.stryker/files/main/storage";
+    public static final String basePath = "/data/data/com.zalexdev.stryker5/files/main/storage";
 
     public FileUtils() {
         // Ensure the base directory exists

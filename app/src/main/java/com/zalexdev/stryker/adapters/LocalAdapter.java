@@ -430,8 +430,8 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.LocalViewHol
             progress.setIndeterminate(true);
                     if (aBoolean) {
                         desc.setText("Wordlists downloaded successfully.");
-                        SuUtils.createFolder("/data/local/stryker/release/hydra");
-                        SuUtils.moveFile(FileUtils.basePath+"/wordlists.zip", "/data/local/stryker/release/hydra/wordlists.zip");
+                        SuUtils.createFolder("/data/local/stryker5/release/hydra");
+                        SuUtils.moveFile(FileUtils.basePath+"/wordlists.zip", "/data/local/stryker5/release/hydra/wordlists.zip");
                         ExecutorBuilder executorBuilder = new ExecutorBuilder();
                         executorBuilder.setChroot(true);
                         executorBuilder.setCommand("unzip /hydra/wordlists.zip -d /hydra");
@@ -440,7 +440,7 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.LocalViewHol
                             Log.d("Unzip", s);
                             desc.setText("Unzipping wordlists: "+s);
                         });
-                        executorBuilder.setOnFinished(strings -> SuUtils.checkFileOrFolder("/data/local/stryker/release/hydra/usernames", aBoolean1 -> {
+                        executorBuilder.setOnFinished(strings -> SuUtils.checkFileOrFolder("/data/local/stryker5/release/hydra/usernames", aBoolean1 -> {
                             if (aBoolean1) {
                                 desc.setText("Wordlists unzipped successfully.");
 

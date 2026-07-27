@@ -961,9 +961,9 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                     input.setOnClickListener(v -> {
                         Log.d("WifiAdapter", "onClick: ");
                         SuUtils suUtils = new SuUtils();
-                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker/wordlists", strings -> {
+                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker5/wordlists", strings -> {
                             if (strings.isEmpty()) {
-                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker/wordlists"), terminal);
+                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker5/wordlists"), terminal);
                             }else {
                                 preferences.dialogChooser(R.drawable.chroot_manager, "Choose wordlist", "wordlist", strings, s -> input.setText(s));
                             }
@@ -972,9 +972,9 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                     inputLayout.setOnClickListener(v -> {
                         Log.d("WifiAdapter", "onClick: ");
                         SuUtils suUtils = new SuUtils();
-                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker/wordlists", strings -> {
+                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker5/wordlists", strings -> {
                             if (strings.isEmpty()) {
-                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker/wordlists"), terminal);
+                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker5/wordlists"), terminal);
                             }else {
                                 preferences.dialogChooser(R.drawable.chroot_manager, "Choose wordlist", "wordlist", strings, s -> input.setText(s));
                             }
@@ -983,9 +983,9 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                     inputLayout2.setOnClickListener(v -> {
                         Log.d("WifiAdapter", "onClick: ");
                         SuUtils suUtils = new SuUtils();
-                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker/wordlists", strings -> {
+                        suUtils.getFileNames(Preferences.getInstance().getActivity(), "/sdcard/Stryker5/wordlists", strings -> {
                             if (strings.isEmpty()) {
-                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker/wordlists"), terminal);
+                                appendToTerminal(danger("No wordlists found in /sdcard/Stryker5/wordlists"), terminal);
                             }else {
                                 preferences.dialogChooser(R.drawable.chroot_manager, "Choose wordlist", "wordlist", strings, s -> input.setText(s));
                             }
@@ -997,8 +997,8 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                         ExecutorBuilder bruter = new ExecutorBuilder();
                         bruter.setChroot(false);
                         bruter.setActivity(preferences.getActivity());
-                        bruter.setCommand("/data/data/com.zalexdev.stryker/files/bash /data/data/com.zalexdev.stryker/files/swb.sh -s \""+item.getSsid()+"\" -p "+item.getSignalDbm()+" -w /sdcard/Stryker/wordlists/"+input.getText().toString());
-                        Log.d("WifiAdapter", "onClick: bash /data/data/com.zalexdev.stryker/files/swb.sh -s "+item.getSsid().replace(" ","~~~")+" -p "+item.getSignalDbm()+" -w /sdcard/Stryker/wordlists/"+input.getText().toString());
+                        bruter.setCommand("/data/data/com.zalexdev.stryker5/files/bash /data/data/com.zalexdev.stryker5/files/swb.sh -s \""+item.getSsid()+"\" -p "+item.getSignalDbm()+" -w /sdcard/Stryker5/wordlists/"+input.getText().toString());
+                        Log.d("WifiAdapter", "onClick: bash /data/data/com.zalexdev.stryker5/files/swb.sh -s "+item.getSsid().replace(" ","~~~")+" -p "+item.getSignalDbm()+" -w /sdcard/Stryker5/wordlists/"+input.getText().toString());
                         bruter.setOutput(s -> appendToTerminal(s, terminal));
                         bruter.setError(s -> appendToTerminal(danger(s), terminal));
                         bruter.setOnFinished(strings -> {
@@ -1123,7 +1123,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                                }
                                   if (first && second) {
                                       appendToTerminal(info("Monitor mode set for both interfaces!"), terminal);
-                                      SuUtils.removeFile("/sdcard/Stryker/.temp/-01.cap");
+                                      SuUtils.removeFile("/sdcard/Stryker5/.temp/-01.cap");
                                       //start airodump
                                       airodump.setChroot(true)
                                               .setCommand(command)
@@ -1181,9 +1181,9 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiAdapter.WifiViewHolder
                                                       cowpatty.kill();
                                                       timer_cowpatty.cancel();
                                                       ExecutorBuilder.runCommandChroot("mv /sdcard/.temp/-01.cap /sdcard/handshakes/"+item.getSsid().replace(" ","_")+".cap");
-                                                      Preferences.getInstance().dialog("Handshake captured", "Handshake captured successfully! And stored into "+"/sdcard/Stryker/handshakes/"+item.getSsid().replace(" ","_")+".cap"+" Click 'copy' to copy path ","OK","Copy",R.drawable.hs_capture, aBoolean -> {
+                                                      Preferences.getInstance().dialog("Handshake captured", "Handshake captured successfully! And stored into "+"/sdcard/Stryker5/handshakes/"+item.getSsid().replace(" ","_")+".cap"+" Click 'copy' to copy path ","OK","Copy",R.drawable.hs_capture, aBoolean -> {
                                                           if (!aBoolean) {
-                                                              copyToClipboard(Preferences.getInstance().getContext(), "/sdcard/Stryker/handshakes/"+item.getSsid().replace(" ","_")+".cap");
+                                                              copyToClipboard(Preferences.getInstance().getContext(), "/sdcard/Stryker5/handshakes/"+item.getSsid().replace(" ","_")+".cap");
                                                           }
                                                       });
                                                   }else {

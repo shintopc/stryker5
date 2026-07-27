@@ -151,7 +151,7 @@ public class LocalScanEngine {
             }
         });
         nmap.setOnFinished(strings -> {
-            String xml = SuUtils.readFile("/sdcard/Stryker/.temp/report.xml");
+            String xml = SuUtils.readFile("/sdcard/Stryker5/.temp/report.xml");
             Log.d("LocalScanner", "nmap: " + xml);
             ArrayList<String> ipAddresses = extractIPsFromXML(xml);
             for (String ipAddress : ipAddresses) {
@@ -283,7 +283,7 @@ public class LocalScanEngine {
         nmap.setChroot(true);
         nmap.setCommand("nmap " + ip + " -n -Pn -O -F --max-os-tries=3 --script=banner "+"-oX /sdcard/.temp/"+ip.replace(".","_")+".xml");
         nmap.setOnFinished(strings -> {
-            String xml = SuUtils.readFile("/sdcard/Stryker/.temp/"+ip.replace(".","_")+".xml");
+            String xml = SuUtils.readFile("/sdcard/Stryker5/.temp/"+ip.replace(".","_")+".xml");
             Port port = new Port("0");
             try {
                 XmlPullParser parser = Xml.newPullParser();

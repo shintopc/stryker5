@@ -47,10 +47,10 @@ f_mount_sdcard() {
         /storage/emulated/0/Stryker \
         /storage/emulated/legacy/Stryker \
         /storage/sdcard0/Stryker \
-        /sdcard/Stryker
+        /sdcard/Stryker5
     do
         [ -d "$sdcard" ] &&
-            $BUSYBOX mount -o bind "$sdcard" "$MNT/sdcard" && echo "[+] mounted /sdcard/Stryker to /sdcard" &&
+            $BUSYBOX mount -o bind "$sdcard" "$MNT/sdcard" && echo "[+] mounted /sdcard/Stryker5 to /sdcard" &&
                 return 0
     done
     return 1
@@ -139,8 +139,8 @@ f_mount_fs() {
     $BUSYBOX sysctl -w net.ipv4.ip_forward=1
     echo "127.0.0.1    localhost stryker"              > $MNT/etc/hosts
     echo "::1    localhost ip6-localhost ip6-loopback" >> $MNT/etc/hosts
-    echo 'nameserver 8.8.8.8'                          > /data/local/stryker/release/etc/resolv.conf
-    echo 'nameserver 8.8.4.4'                          >> /data/local/stryker/release/etc/resolv.conf
+    echo 'nameserver 8.8.8.8'                          > /data/local/stryker5/release/etc/resolv.conf
+    echo 'nameserver 8.8.4.4'                          >> /data/local/stryker5/release/etc/resolv.conf
 
     ######### Setup done #########
     echo "[+] The Chroot has been started."
