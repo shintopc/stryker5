@@ -47,6 +47,9 @@ public class Slide3 extends Fragment {
 
     private LottieAnimationView lottieAnimationView;
     private MaterialButton autoInstallButton;
+    private MaterialButton selectFileButton;
+    private MaterialButton wikiButton;
+    private static final int REQUEST_CODE_PICK_FILE = 1001;
 
     private NotificationCompat.Builder notification;
     private NotificationManager notificationManager;
@@ -67,9 +70,12 @@ public class Slide3 extends Fragment {
         TextView title = view.findViewById(R.id.slide_title);
         description = view.findViewById(R.id.slide_description);
         autoInstallButton = view.findViewById(R.id.download);
-        MaterialButton wiki = view.findViewById(R.id.wiki);
+        wikiButton = view.findViewById(R.id.wiki);
+        selectFileButton = view.findViewById(R.id.select_file);
         lottieAnimationView = view.findViewById(R.id.lottie_anim);
         lottieAnimationView.playAnimation();
+
+        selectFileButton.setOnClickListener(view1 -> openFilePicker());
 
         autoInstallButton.setOnClickListener(view1 -> {
             lottieAnimationView.setRepeatCount(0);
@@ -82,7 +88,8 @@ public class Slide3 extends Fragment {
             SuUtils.copyAssets();
             lottieAnimationView.playAnimation();
             lottieAnimationView.postOnAnimation(() -> lottieAnimationView.setMaxFrame(220));
-            wiki.setVisibility(View.GONE);
+            wikiButton.setVisibility(View.GONE);
+            selectFileButton.setVisibility(View.GONE);
             autoInstallButton.setEnabled(false);
             autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
             FileUtils fileUtils = new FileUtils();
@@ -283,5 +290,63 @@ public class Slide3 extends Fragment {
 
     private void removeNotification(){
         notificationManager.cancel(1);
+    }
+
+    private void openFilePicker() {
+        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_CODE_PICK_FILE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PICK_FILE && resultCode == Activity.RESULT_OK && data != null) {
+            android.net.Uri uri = data.getData();
+            if (uri != null) {
+                try {
+                    try {
+                        requireContext().getContentResolver().takePersistableUriPermission(uri,
+                                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch (SecurityException ignored) {}
+
+                    java.io.InputStream in = requireContext().getContentResolver().openInputStream(uri);
+                    if (in != null) {
+                        FileUtils fileUtils = new FileUtils();
+                        fileUtils.createFolder("cache");
+                        java.io.File dest = new java.io.File(FileUtils.basePath + "/core.tar.gz");
+                        java.io.FileOutputStream out = new java.io.FileOutputStream(dest);
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                        in.close();
+                        out.close();
+
+                        // Visual feedback for installation
+                        activity.runOnUiThread(() -> {
+                            if (wikiButton != null) wikiButton.setVisibility(View.GONE);
+                            if (selectFileButton != null) selectFileButton.setVisibility(View.GONE);
+                            autoInstallButton.setEnabled(false);
+                            autoInstallButton.setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.info, null));
+                            autoInstallButton.setText("Installing...");
+                            lottieAnimationView.setMinAndMaxFrame(31, 91);
+                            lottieAnimationView.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
+                            lottieAnimationView.playAnimation();
+                        });
+
+                        startInstallation();
+                    } else {
+                        description.setText("Unable to open selected file");
+                    }
+                } catch (Exception e) {
+                    description.setText("Error opening file: " + e.getMessage());
+                }
+            }
+        }
     }
 }
