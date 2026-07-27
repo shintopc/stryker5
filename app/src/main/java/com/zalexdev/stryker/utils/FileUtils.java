@@ -127,25 +127,46 @@ public class FileUtils {
 
 
     @SuppressLint("DefaultLocale")
-    public void downloadFile(Activity activity, String fileURL, String destinationFileName,Consumer<Integer> intCallback, Consumer<String> progressCallback, Consumer<Boolean> completionCallback) {
+    public void downloadFile(Activity activity, String fileURL, String destinationFileName, Consumer<Integer> intCallback, Consumer<String> progressCallback, Consumer<Boolean> completionCallback) {
         new Thread(() -> {
             boolean result = false;
             try {
-                URL url = new URL(fileURL);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                int fileLength = connection.getContentLength();
+                // Follow redirects (GitHub releases use 302 redirects)
+                String currentUrl = fileURL;
+                HttpURLConnection connection = null;
+                for (int redirects = 0; redirects < 5; redirects++) {
+                    URL url = new URL(currentUrl);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setInstanceFollowRedirects(false);
+                    connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    connection.connect();
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                            || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                            || responseCode == 307 || responseCode == 308) {
+                        String location = connection.getHeaderField("Location");
+                        connection.disconnect();
+                        if (location == null) break;
+                        currentUrl = location;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (connection == null) throw new IOException("Failed to open connection");
+                long fileLength = connection.getContentLengthLong();
 
                 try (InputStream in = connection.getInputStream();
                      FileOutputStream fos = new FileOutputStream(new File(basePath, destinationFileName))) {
 
-                    byte[] buffer = new byte[4096];
+                    byte[] buffer = new byte[8192];
                     int bytesRead;
                     long totalBytesRead = 0;
 
                     while ((bytesRead = in.read(buffer)) != -1) {
                         totalBytesRead += bytesRead;
                         fos.write(buffer, 0, bytesRead);
-                        final int progress = (int) ((totalBytesRead * 100) / fileLength);
+                        final int progress = fileLength > 0 ? (int) ((totalBytesRead * 100) / fileLength) : 0;
                         final double mbDownloaded = totalBytesRead / (1024.0 * 1024);
                         final double mbTotal = fileLength / (1024.0 * 1024);
 
@@ -156,11 +177,11 @@ public class FileUtils {
                     }
                     result = true;
                 }
+                connection.disconnect();
             } catch (IOException e) {
                 Log.e("FileUtils", "Error downloading file", e);
                 activity.runOnUiThread(() -> progressCallback.accept("Error downloading file: " + e.getMessage()));
             }
-
 
             boolean finalResult = result;
             activity.runOnUiThread(() -> completionCallback.accept(finalResult));

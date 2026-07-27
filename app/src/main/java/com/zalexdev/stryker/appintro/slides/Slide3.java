@@ -97,7 +97,7 @@ public class Slide3 extends Fragment {
             SuUtils.checkFileOrFolder(SuUtils.CHROOT_PATH+"VERSION_5.0", aBoolean -> {
                 SuUtils.copyAssets();
                 if (!aBoolean){
-                    fileUtils.downloadFile(activity, "https://cdn.strykerdefence.com/media/5b8.tar.gz", "core.tar.gz",
+                    fileUtils.downloadFile(activity, "https://github.com/zalexdev/strykerapp/releases/download/chroot-main/chroot_v5b_64.tar.gz", "core.tar.gz",
                             progress -> {
                                 lottieAnimationView.setFrame(120 + progress);
                                 lottieAnimationView.setRepeatCount(0);
