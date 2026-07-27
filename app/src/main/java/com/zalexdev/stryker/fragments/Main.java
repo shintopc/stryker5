@@ -114,10 +114,14 @@ public class Main extends Fragment {
         } else {
             size.setText(Preferences.getInstance().getString("chroot_size"));
         }
-        SuUtils.mountChroot(chroot::setText, aBoolean -> {
+        StringBuilder mountLog = new StringBuilder();
+        SuUtils.mountChroot(line -> {
+            mountLog.append(line).append("\n");
+            chroot.setText(line);
+        }, aBoolean -> {
             if (!aBoolean) {
                 Log.e("Main", "onCreateView: Error mounting chroot");
-                chroot.setText("Error mounting chroot! This is a critical error! Do not continue!");
+                chroot.setText("Error mounting chroot! Details:\n" + mountLog.toString());
             } else {
                 chroot.setText("All systems are cool ⚡. Chroot environment is ready");
             }

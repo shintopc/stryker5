@@ -27,7 +27,7 @@ public class Slide6Final extends Fragment {
         MaterialButton button = view.findViewById(R.id.login);
         button.setOnClickListener(view1 -> {
 
-            ExecutorBuilder.runCommand("am force-stop com.zalexdev.stryker&& am start -n com.zalexdev.stryker/com.zalexdev.stryker.MainActivity");
+            ExecutorBuilder.runCommand("am force-stop com.zalexdev.stryker5 && am start -n com.zalexdev.stryker5/com.zalexdev.stryker.MainActivity");
             requireActivity().finishAffinity();
         });
         return view;
